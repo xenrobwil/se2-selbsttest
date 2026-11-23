@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Selbsttest SE 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* VOICE: ruhig, ermutigend, wie ein Übungsblatt nach der Vorlesung
+   IDEA: die Fortschrittsleiste und Pills aus dem Foliensatz – Quiz als Fortsetzung der Lehrprobe
+   PICTURE: die aktuelle Frage selbst, groß, mit Code in Mono
+   COLOUR and TYPE: Weiß, Magenta #c42a8f als Fortschritt, Lime #d4ec3c als Pill, Hellblau #9cc8f2; Noto Sans + IBM Plex Mono
+   LAYOUT: eine Spalte, max. 680px, Handy zuerst */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#16161a);--ink:light-dark(#1a1a1a,#f1f1f3);--mute:light-dark(#555,#b4b4bb);
+--line:light-dark(#1a1a1a,#d8d8de);--card:light-dark(#ffffff,#202026);
+--mag:#c42a8f;--lime:#d4ec3c;--blue:light-dark(#eaf3fc,#24364a);
+--ok:light-dark(#1f7a3a,#7fd69a);--okbg:light-dark(#e8f6ec,#1c3324);--no:light-dark(#b0232f,#ff9aa2);--nobg:light-dark(#fdecee,#3a1f23)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Sans",system-ui,sans-serif;overflow-x:clip}
+.wrap{max-width:680px;margin:0 auto;padding:clamp(20px,5vw,48px) max(5vw,16px) 48px}
+.pill{display:inline-block;background:var(--lime);color:#1a1a1a;border:1.5px solid #1a1a1a;border-radius:999px;padding:4px 14px;font-weight:700;font-size:14px}
+h1{font-size:clamp(28px,6vw,40px);line-height:1.08;margin:14px 0 8px;text-wrap:balance}
+.lead{color:var(--mute);margin:0 0 22px}
+.bar{display:flex;gap:6px;margin:0 0 6px}
+.bar span{flex:1;height:10px;border-radius:5px;border:1.5px solid var(--line);background:transparent}
+.bar span.done{background:var(--mag);border-color:var(--mag)}
+.bar span.now{background:linear-gradient(90deg,var(--mag) 50%,transparent 50%)}
+.meta{display:flex;justify-content:space-between;font-size:14px;color:var(--mute);margin-bottom:18px}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:clamp(18px,4vw,28px)}
+.lz{display:inline-block;background:var(--blue);border:1px solid var(--line);border-radius:999px;font-size:13px;padding:2px 10px;margin-bottom:10px}
+.q{font-size:clamp(19px,4.2vw,22px);font-weight:600;line-height:1.3;margin:0 0 14px}
+pre{font:14px/1.5 "IBM Plex Mono",ui-monospace,monospace;background:var(--blue);border-radius:10px;padding:10px 12px;margin:0 0 16px;overflow-x:auto;white-space:pre}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;font:inherit;color:inherit;background:transparent;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;min-height:48px;cursor:pointer}
+.opt:hover{background:var(--blue)}
+.opt:focus-visible,.btn:focus-visible{outline:3px solid var(--mag);outline-offset:2px}
+.opt b{flex:none;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:14px}
+.opt code{font:14px "IBM Plex Mono",monospace}
+.opt.right{background:var(--okbg);border-color:var(--ok)}
+.opt.wrong{background:var(--nobg);border-color:var(--no)}
+.opt[disabled]{cursor:default}
+.fb{margin-top:16px;border-radius:14px;padding:12px 14px;display:none}
+.fb.show{display:block}
+.fb.ok{background:var(--okbg)}.fb.no{background:var(--nobg)}
+.fb strong{display:block;margin-bottom:4px}
+.row{display:flex;justify-content:flex-end;margin-top:18px}
+.btn{font:inherit;font-weight:700;background:var(--mag);color:#fff;border:1.5px solid var(--mag);border-radius:999px;padding:10px 22px;min-height:44px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.score{font-size:clamp(44px,12vw,64px);font-weight:700;line-height:1;color:var(--mag);margin:6px 0}
+.list{padding-left:20px;margin:10px 0 0}.list li{margin:6px 0}
+.note{font-size:13px;color:var(--mute);margin-top:22px}
+@media (prefers-reduced-motion:no-preference){.card{animation:in .25s ease-out}@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <span class="pill">Selbsttest zur Probelehrveranstaltung · Software Engineering 2</span>
+  <h1>Einsatz eines deklarativen Programmierparadigmas im Software Engineering</h1>
+  <p class="lead">Prüfen Sie Ihren Lernstand: 5 Fragen, nach jeder Frage bekommen Sie sofort eine Rückmeldung. Anonym, es wird nichts gespeichert oder übertragen.</p>
+  <div class="bar" id="bar"></div>
+  <div class="meta"><span id="pos"></span><span id="pts"></span></div>
+  <section id="stage" aria-live="polite"></section>
+  <p class="note">Beispiel: Messdatenauswertung am Wärmepumpen-Prüfstand aus der Vorlesung. Code und Daten finden Sie auf dem Arbeitsblatt.</p>
+</main>
+<script>
+{
+const Q=[
+{lz:"Lernziel 1 · Architekturstil begründen",q:"Messpunkte eines abgeschlossenen Prüflaufs sollen eingelesen, gefiltert, umgerechnet und zu einem COP je Prüfpunkt verdichtet werden. Welcher Architekturstil passt am besten?",
+o:["Schichten","Eventgetrieben","Pipeline"],a:2,
+e:"Eine feste Folge eigenständiger Schritte mit einem Ergebnis ist eine Pipeline. Eventgetrieben lohnt sich, wenn auf Ereignisse reagiert wird – ein abgeschlossener Prüflauf liefert keine neuen."},
+{lz:"Grundlage · Deklaratives Paradigma",q:"Woran erkennen Sie deklarativen Code?",
+o:["Er ist kürzer","Er nutzt Lambdas","Er beschreibt das Was, nicht das Wie","Er läuft schneller"],a:2,
+e:"Keine Schleife und kein Zähler sind nur Erkennungszeichen. Deklarativer Code beschreibt das Ergebnis; Ablauf und Zwischenstände übernimmt das System – bei Streams die Bibliothek, bei SQL das Datenbanksystem."},
+{lz:"Lernziel 2 · Code erweitern",q:"Neue Anforderung F5: Messpunkte mit einer Heizleistung über 20 kW sind Messfehler und sollen nicht in die Auswertung eingehen. Wie erfüllen Sie F5, ohne bestehende Schritte zu ändern (Q2)?",
+code:"messpunkte.stream()\n    .filter(Messpunkt::stationaer)        // F2\n    .map(m -> new MesspunktKW(...))       // F3\n    .collect(groupingBy(...));            // F3",
+o:["Die Bedingung im bestehenden <code>filter(stationaer)</code> ergänzen","Einen zusätzlichen <code>.filter(m -&gt; m.heizleistungKW() &lt;= 20)</code> in die Kette einfügen","Messfehler in der Methode <code>cop</code> herausrechnen","Im <code>map</code>-Schritt Messfehler auf 0 kW setzen"],a:1,
+e:"Ein neuer Schritt, kein bestehender geändert – das ist Q2. Jeder Schritt arbeitet nur mit dem, was bei ihm ankommt. Messfehler auf 0 kW zu setzen würde den COP sogar still verfälschen."},
+{lz:"Lernziel 3 · Bewerten",q:"Warum ist ein Sensorausfall in der Stream-Pipeline schwerer zu finden?",
+o:["Streams ignorieren fehlerhafte Werte","Zwischenstände sind verborgen und müssen erst sichtbar gemacht werden","Streams können keine Zahlen vergleichen","Streams laufen parallel, die Reihenfolge ist zufällig"],a:1,
+e:"Deklarativ verbirgt das Wie – auch bei der Fehlersuche. Zwischenstände über alle Elemente sehen Sie erst, wenn Sie sie sichtbar machen, zum Beispiel mit <code>peek</code>. Hier ist Q1 nur teilweise erfüllt."},
+{lz:"Lernziel 3 · Bewerten",q:"„Parallelisierbarkeit ist für unser Auswertemodul ein entscheidender Vorteil.“ Stimmt das?",
+o:["Ja, schneller ist immer besser","Nein, Laufzeit ist keine unserer Anforderungen","Ja, Q2 fordert das","Nein, Streams sind nicht parallelisierbar"],a:1,
+e:"Bewertet wird an den eigenen Anforderungen: Q1 (nachvollziehbar) und Q2 (erweiterbar). Parallelisierbar ist technisch richtig, zählt hier aber nicht – die Auswertung läuft einmal je Prüflauf."}
+];
+let i=0,pts=0,answered=false;const wrong=[];
+const stage=document.getElementById('stage'),bar=document.getElementById('bar'),pos=document.getElementById('pos'),ptsEl=document.getElementById('pts');
+const L="ABCD";
+function drawBar(){bar.innerHTML=Q.map((_,k)=>`<span class="${k<i?'done':k===i?'now':''}"></span>`).join('')}
+function show(){
+  answered=false;drawBar();
+  pos.textContent=`Frage ${i+1} von ${Q.length}`;ptsEl.textContent=`${pts} richtig`;
+  const x=Q[i];
+  stage.innerHTML=`<div class="card"><span class="lz">${x.lz}</span><p class="q">${x.q}</p>${x.code?`<pre>${x.code}</pre>`:''}
+  <div class="opts">${x.o.map((t,k)=>`<button class="opt" data-k="${k}"><b>${L[k]}</b><span>${t}</span></button>`).join('')}</div>
+  <div class="fb" id="fb"></div>
+  <div class="row"><button class="btn" id="next" hidden>${i<Q.length-1?'Weiter':'Auswertung'}</button></div></div>`;
+  stage.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>pick(+b.dataset.k)));
+  document.getElementById('next').addEventListener('click',()=>{i++;i<Q.length?show():end()});
+}
+function pick(k){
+  if(answered)return;answered=true;
+  const x=Q[i],ok=k===x.a;if(ok)pts++;else wrong.push(i);
+  stage.querySelectorAll('.opt').forEach(b=>{const n=+b.dataset.k;b.disabled=true;if(n===x.a)b.classList.add('right');else if(n===k)b.classList.add('wrong')});
+  const fb=document.getElementById('fb');fb.className='fb show '+(ok?'ok':'no');
+  fb.innerHTML=`<strong>${ok?'Richtig.':'Nicht ganz – richtig ist '+L[x.a]+'.'}</strong>${x.e}`;
+  ptsEl.textContent=`${pts} richtig`;
+  const n=document.getElementById('next');n.hidden=false;n.focus();
+}
+function end(){
+  i=Q.length;drawBar();pos.textContent='Auswertung';ptsEl.textContent='';
+  const msg=pts===Q.length?'Alles sitzt – stark!':pts>=4?'Gute Basis. Schauen Sie sich die markierten Punkte noch einmal an.':'Wiederholen Sie die Punkte unten mit dem Arbeitsblatt – in der Übung schreiben Sie die Pipeline selbst.';
+  const rep=wrong.length?`<p><strong>Zum Wiederholen:</strong></p><ul class="list">${wrong.map(k=>`<li>${Q[k].lz}</li>`).join('')}</ul>`:'';
+  stage.innerHTML=`<div class="card"><span class="lz">Ihr Ergebnis</span><div class="score">${pts} / ${Q.length}</div><p>${msg}</p>${rep}
+  <p style="margin-top:16px">Als Nächstes: Wie testet man eine Pipeline? Darum geht es in der nächsten Vorlesung.</p>
+  <div class="row"><button class="btn ghost" id="again">Noch einmal</button></div></div>`;
+  document.getElementById('again').addEventListener('click',()=>{i=0;pts=0;wrong.length=0;show()});
+}
+show();
+}
+</script>
+</body>
+</html>
